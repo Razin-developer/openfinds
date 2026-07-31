@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/splash_background" />
+    <item android:gravity="center" android:width="96dp" android:height="96dp">
+        <vector xmlns:android="http://schemas.android.com/apk/res/android"
+            android:width="96dp"
+            android:height="96dp"
+            android:viewportWidth="96"
+            android:viewportHeight="96">
+            <path
+                android:fillColor="#5B6CFF"
+                android:pathData="M48,8 C25.9,8 8,25.9 8,48 C8,70.1 25.9,88 48,88 C70.1,88 88,70.1 88,48 C88,25.9 70.1,8 48,8 Z M48,76 C32.5,76 20,63.5 20,48 C20,32.5 32.5,20 48,20 C63.5,20 76,32.5 76,48 C76,63.5 63.5,76 48,76 Z" />
+            <path
+                android:fillColor="#5B6CFF"
+                android:pathData="M48,32 C39.2,32 32,39.2 32,48 C32,56.8 39.2,64 48,64 C56.8,64 64,56.8 64,48 C64,39.2 56.8,32 48,32 Z M48,54 C43.6,54 40,50.4 40,46 C40,41.6 43.6,38 48,38 C52.4,38 56,41.6 56,46 C56,50.4 52.4,54 48,54 Z" />
+        </vector>
+    </item>
+</layer-list>

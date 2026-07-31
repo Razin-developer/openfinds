@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">OpenFind</string>
+
+    <string name="notification_monitoring_title">OpenFind is watching for your devices</string>
+    <string name="notification_monitoring_text">Trusted devices can find, ring, and reconnect to this phone</string>
+    <string name="notification_pairing_title">Pairing request</string>
+    <string name="notification_pairing_text">%1$s wants to pair with this device</string>
+</resources>

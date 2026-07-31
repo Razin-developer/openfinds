@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    OpenFind never talks to the open internet: all traffic is peer-to-peer
+    over the local Wi-Fi network using our own encrypted protocol, so cleartext
+    HTTP traffic is disabled everywhere and there is no remote trust anchor.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>
