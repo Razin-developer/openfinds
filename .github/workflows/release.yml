@@ -36,22 +36,18 @@ jobs:
       - name: Write keystore.properties
         if: ${{ secrets.RELEASE_KEYSTORE_BASE64 != '' }}
         env:
-          RELEASE_KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
           RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
           RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
           RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
-        run: |
-          cat > keystore.properties <<EOF
-          storeFile=${{ github.workspace }}/release.keystore
-          storePassword=$RELEASE_STORE_PASSWORD
-          keyAlias=$RELEASE_KEY_ALIAS
-          keyPassword=$RELEASE_KEY_PASSWORD
-          EOF
+        run: >
+          printf 'storeFile=%s/release.keystore\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n'
+          "$GITHUB_WORKSPACE" "$RELEASE_STORE_PASSWORD" "$RELEASE_KEY_ALIAS" "$RELEASE_KEY_PASSWORD"
+          > keystore.properties
 
       - name: Unit tests
         run: ./gradlew test --stacktrace
 
-      - name: Build release APK + AAB
+      - name: Build release APK and AAB
         run: ./gradlew :app:assembleRelease :app:bundleRelease --stacktrace
 
       - name: Rename artifacts with version
