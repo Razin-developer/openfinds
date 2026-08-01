@@ -106,7 +106,7 @@ fun PairDiscoverScreen(
                 )
             } else {
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    items(nearbyDevices, key = { it.host + it.port }) { device ->
+                    items(nearbyDevices, key = { it.deviceId }) { device ->
                         Card(
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                             modifier = Modifier.fillMaxWidth(),

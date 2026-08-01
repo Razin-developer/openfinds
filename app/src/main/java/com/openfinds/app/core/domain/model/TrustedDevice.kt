@@ -22,6 +22,7 @@ enum class ConnectionState { ONLINE, OFFLINE, CONNECTING }
 
 /** A device discovered on the network but not yet trusted/paired. */
 data class DiscoveredDevice(
+    val deviceId: String,
     val serviceName: String,
     val host: String,
     val port: Int,

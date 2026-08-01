@@ -69,6 +69,7 @@ class UdpPresenceBeacon
                                 if (parts.size == 4 && parts[0] == "OPENFIND") {
                                     trySend(
                                         DiscoveredDevice(
+                                            deviceId = parts[1],
                                             serviceName = parts[2],
                                             host = packet.address.hostAddress ?: continue,
                                             port = parts[3].toIntOrNull() ?: continue,

@@ -16,6 +16,7 @@ import com.openfinds.app.core.network.NetworkConstants
 import com.openfinds.app.core.network.NsdAdvertiser
 import com.openfinds.app.core.network.P2pConnectionManager
 import com.openfinds.app.core.network.UdpPresenceBeacon
+import com.openfinds.app.core.network.WifiNetworkBinder
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -46,6 +47,8 @@ class DeviceMonitorService : Service() {
     @Inject lateinit var preferencesRepository: UserPreferencesRepository
 
     @Inject lateinit var bleAdvertiser: BleAdvertiser
+
+    @Inject lateinit var wifiNetworkBinder: WifiNetworkBinder
 
     private var serviceJob: Job = SupervisorJob()
     private lateinit var serviceScope: CoroutineScope
@@ -79,6 +82,7 @@ class DeviceMonitorService : Service() {
         // this guard we'd spawn a duplicate UDP beacon loop and pairing-request collector per call.
         if (monitoringStarted) return
         monitoringStarted = true
+        wifiNetworkBinder.ensureBoundToWifi()
         serviceScope.launch {
             val identity = identityStore.getOrCreate()
             val prefs = preferencesRepository.preferences.first()

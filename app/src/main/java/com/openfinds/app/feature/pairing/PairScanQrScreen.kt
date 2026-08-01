@@ -6,12 +6,14 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.AlertDialog
@@ -22,6 +24,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,6 +40,7 @@ import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.openfinds.app.core.network.PairingOutcome
+import kotlinx.coroutines.delay
 import java.util.concurrent.Executors
 
 @Composable
@@ -47,11 +51,23 @@ fun PairScanQrScreen(
 ) {
     val lifecycleOwner = LocalLifecycleOwner.current
     var hasDecoded by remember { mutableStateOf(false) }
+    var scanStatus by remember { mutableStateOf<String?>(null) }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val onDecodedState =
         rememberUpdatedState<(QrPairingPayload) -> Unit> { payload ->
             viewModel.pairWithQrPayload(payload)
         }
+    val onInvalidCodeState =
+        rememberUpdatedState<() -> Unit> {
+            scanStatus = "That's not an OpenFind pairing code — make sure you're scanning the QR shown on the other device."
+        }
+
+    LaunchedEffect(scanStatus) {
+        if (scanStatus != null) {
+            delay(3000)
+            scanStatus = null
+        }
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         AndroidView(
@@ -73,9 +89,12 @@ fun PairScanQrScreen(
                                         cameraExecutor,
                                         QrScannerAnalyzer { text ->
                                             if (!hasDecoded) {
-                                                QrPairingPayload.decode(text)?.let { payload ->
+                                                val payload = QrPairingPayload.decode(text)
+                                                if (payload != null) {
                                                     hasDecoded = true
                                                     onDecodedState.value(payload)
+                                                } else {
+                                                    onInvalidCodeState.value()
                                                 }
                                             }
                                         },
@@ -100,10 +119,18 @@ fun PairScanQrScreen(
                 Icon(Icons.Filled.Close, contentDescription = "Close", tint = Color.White)
             }
             Text(
-                "Point your camera at the other device's pairing QR code",
+                scanStatus ?: "Point your camera at the other device's pairing QR code",
                 color = Color.White,
                 style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 32.dp),
+                modifier =
+                    Modifier
+                        .align(Alignment.BottomCenter)
+                        .background(
+                            if (scanStatus != null) MaterialTheme.colorScheme.error.copy(alpha = 0.85f) else Color.Transparent,
+                            RoundedCornerShape(12.dp),
+                        )
+                        .padding(horizontal = if (scanStatus != null) 16.dp else 0.dp, vertical = if (scanStatus != null) 10.dp else 0.dp)
+                        .padding(bottom = if (scanStatus != null) 0.dp else 32.dp),
             )
         }
     }

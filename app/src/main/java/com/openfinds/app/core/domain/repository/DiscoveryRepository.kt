@@ -4,7 +4,9 @@ import com.openfinds.app.core.domain.model.DiscoveredDevice
 import com.openfinds.app.core.network.BleScanner
 import com.openfinds.app.core.network.NsdDiscoverer
 import com.openfinds.app.core.network.UdpPresenceBeacon
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.scan
@@ -32,11 +34,49 @@ class DiscoveryRepositoryImpl
         private val bleScanner: BleScanner,
     ) : DiscoveryRepository {
         override fun discoverNearbyDevices(): Flow<List<DiscoveredDevice>> =
-            merge(nsdDiscoverer.discover(), udpPresenceBeacon.listen())
-                .scan(emptyMap<String, DiscoveredDevice>()) { acc, device ->
-                    acc + (device.host + ":" + device.port to device)
+            merge(
+                nsdDiscoverer.discover().map { DiscoveryEvent.Sighting(it) },
+                udpPresenceBeacon.listen().map { DiscoveryEvent.Sighting(it) },
+                stalenessTicker(),
+            )
+                .scan(emptyMap<String, Sighting>()) { acc, event ->
+                    when (event) {
+                        is DiscoveryEvent.Sighting -> {
+                            // Keyed by the peer's stable device ID rather than host:port, so the same
+                            // physical device found via both NSD and UDP — or one that gets a new DHCP
+                            // lease mid-session — collapses to a single, up-to-date entry instead of
+                            // appearing as a duplicate.
+                            acc + (event.device.deviceId to Sighting(event.device, System.currentTimeMillis()))
+                        }
+                        DiscoveryEvent.Tick -> {
+                            val now = System.currentTimeMillis()
+                            acc.filterValues { now - it.seenAtMs < STALE_AFTER_MS }
+                        }
+                    }
                 }
-                .map { it.values.toList() }
+                .map { it.values.map(Sighting::device) }
 
         override fun bleNearbySignal(): Flow<Boolean> = bleScanner.scan().map { true }
+
+        private fun stalenessTicker(): Flow<DiscoveryEvent> =
+            flow {
+                while (true) {
+                    delay(STALE_CHECK_INTERVAL_MS)
+                    emit(DiscoveryEvent.Tick)
+                }
+            }
+
+        private data class Sighting(val device: DiscoveredDevice, val seenAtMs: Long)
+
+        private sealed interface DiscoveryEvent {
+            data class Sighting(val device: DiscoveredDevice) : DiscoveryEvent
+
+            data object Tick : DiscoveryEvent
+        }
+
+        private companion object {
+            /** A few missed UDP beacon cycles (4s each) before a device is considered gone. */
+            const val STALE_AFTER_MS = 15_000L
+            const val STALE_CHECK_INTERVAL_MS = 3_000L
+        }
     }
