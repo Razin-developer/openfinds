@@ -76,10 +76,14 @@ fun OpenFindNavHost(
             }
         },
     ) { padding ->
+        // Only reserve the bottom-bar's own height here — each screen has its own inner
+        // Scaffold (top app bar) which already reserves the status bar inset. Applying the
+        // outer Scaffold's full `padding` too would double that top inset, showing as a gap
+        // above every screen's title.
         NavHost(
             navController = navController,
             startDestination = startDestination,
-            modifier = Modifier.padding(padding),
+            modifier = Modifier.padding(bottom = padding.calculateBottomPadding()),
         ) {
             composable<OpenFindDestination.Welcome> {
                 val viewModel: OnboardingViewModel = hiltViewModel()

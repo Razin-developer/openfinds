@@ -50,6 +50,8 @@ class DeviceMonitorService : Service() {
     private var serviceJob: Job = SupervisorJob()
     private lateinit var serviceScope: CoroutineScope
 
+    @Volatile private var monitoringStarted = false
+
     override fun onCreate() {
         super.onCreate()
         serviceScope = CoroutineScope(Dispatchers.IO + serviceJob)
@@ -72,6 +74,11 @@ class DeviceMonitorService : Service() {
     }
 
     private fun startMonitoring() {
+        // onStartCommand runs on every startForegroundService() call, including the one this
+        // service's own MainActivity makes each time the app comes to the foreground — without
+        // this guard we'd spawn a duplicate UDP beacon loop and pairing-request collector per call.
+        if (monitoringStarted) return
+        monitoringStarted = true
         serviceScope.launch {
             val identity = identityStore.getOrCreate()
             val prefs = preferencesRepository.preferences.first()
@@ -115,6 +122,7 @@ class DeviceMonitorService : Service() {
         bleAdvertiser.stop()
         connectionManager.stop()
         serviceJob.cancel()
+        monitoringStarted = false
         super.onDestroy()
     }
 

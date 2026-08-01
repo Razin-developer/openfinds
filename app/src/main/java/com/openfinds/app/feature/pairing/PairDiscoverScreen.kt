@@ -138,11 +138,23 @@ fun PairDiscoverScreen(
             title = { Text("Your pairing PIN") },
             text = {
                 Column {
-                    Text("Enter this on the other device within a minute:", style = MaterialTheme.typography.bodyMedium)
-                    Spacer(Modifier.height(12.dp))
+                    Text(
+                        "On the other device: open Pair a device, find this device under " +
+                            "\"Nearby devices\", tap Pair, and type this PIN.",
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    Spacer(Modifier.height(16.dp))
                     Text(
                         pin,
                         style = MaterialTheme.typography.displaySmall,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        "Keep this screen open until pairing completes.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth(),
                     )
@@ -160,7 +172,11 @@ fun PairDiscoverScreen(
                 Column(horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
                     QrCodeImage(content = payload)
                     Spacer(Modifier.height(12.dp))
-                    Text("Scan this from the other device", style = MaterialTheme.typography.bodySmall)
+                    Text(
+                        "On the other device, open Pair a device and tap \"Scan a QR code.\"",
+                        style = MaterialTheme.typography.bodySmall,
+                        textAlign = TextAlign.Center,
+                    )
                 }
             },
             confirmButton = { TextButton(onClick = { viewModel.clearMyQrPayload() }) { Text("Done") } },

@@ -34,9 +34,17 @@ class NsdDiscoverer
 
                         override fun onServiceResolved(serviceInfo: NsdServiceInfo) {
                             val host = serviceInfo.host?.hostAddress ?: return
+                            // The NSD service name itself is a technical, ID-based identifier
+                            // (see NsdAdvertiser); the human-readable name travels in the TXT
+                            // record so devices show the same friendly name via NSD or UDP.
+                            val friendlyName =
+                                runCatching { serviceInfo.attributes["deviceName"]?.toString(Charsets.UTF_8) }
+                                    .getOrNull()
+                                    ?.takeIf { it.isNotBlank() }
+                                    ?: serviceInfo.serviceName
                             trySend(
                                 DiscoveredDevice(
-                                    serviceName = serviceInfo.serviceName,
+                                    serviceName = friendlyName,
                                     host = host,
                                     port = serviceInfo.port,
                                     publicKeyBase64 = null,
