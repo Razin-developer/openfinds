@@ -45,6 +45,9 @@ jobs:
       - name: Unit tests
         run: ./gradlew test --stacktrace
 
+      - name: Build debug APK
+        run: ./gradlew :app:assembleDebug --stacktrace
+
       - name: Build release APK and AAB
         run: ./gradlew :app:assembleRelease :app:bundleRelease --stacktrace
 
@@ -56,8 +59,10 @@ jobs:
           # (e.g. no RELEASE_KEYSTORE_BASE64 secret configured) — pick up whichever exists.
           APK_PATH=$(find app/build/outputs/apk/release -maxdepth 1 -name '*.apk' | head -n 1)
           AAB_PATH=$(find app/build/outputs/bundle/release -maxdepth 1 -name '*.aab' | head -n 1)
+          DEBUG_APK_PATH=$(find app/build/outputs/apk/debug -maxdepth 1 -name '*.apk' | head -n 1)
           cp "$APK_PATH" "out/OpenFind-${VERSION}.apk"
           cp "$AAB_PATH" "out/OpenFind-${VERSION}.aab"
+          cp "$DEBUG_APK_PATH" "out/OpenFind-${VERSION}-debug.apk"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
