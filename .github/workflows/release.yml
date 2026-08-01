@@ -52,8 +52,12 @@ jobs:
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
           mkdir -p out
-          cp app/build/outputs/apk/release/app-release.apk "out/OpenFind-${VERSION}.apk"
-          cp app/build/outputs/bundle/release/app-release.aab "out/OpenFind-${VERSION}.aab"
+          # AGP names the APK app-release.apk when signed, app-release-unsigned.apk otherwise
+          # (e.g. no RELEASE_KEYSTORE_BASE64 secret configured) — pick up whichever exists.
+          APK_PATH=$(find app/build/outputs/apk/release -maxdepth 1 -name '*.apk' | head -n 1)
+          AAB_PATH=$(find app/build/outputs/bundle/release -maxdepth 1 -name '*.aab' | head -n 1)
+          cp "$APK_PATH" "out/OpenFind-${VERSION}.apk"
+          cp "$AAB_PATH" "out/OpenFind-${VERSION}.aab"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
