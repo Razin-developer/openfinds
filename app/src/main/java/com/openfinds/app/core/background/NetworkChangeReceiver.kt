@@ -13,7 +13,10 @@ import dagger.hilt.android.AndroidEntryPoint
  */
 @AndroidEntryPoint
 class NetworkChangeReceiver : BroadcastReceiver() {
-    override fun onReceive(context: Context, intent: Intent) {
+    override fun onReceive(
+        context: Context,
+        intent: Intent,
+    ) {
         if (intent.action != "android.net.conn.CONNECTIVITY_CHANGE") return
         ContextCompat.startForegroundService(context, Intent(context, DeviceMonitorService::class.java))
     }

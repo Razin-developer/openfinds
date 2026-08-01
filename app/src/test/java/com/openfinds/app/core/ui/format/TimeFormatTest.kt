@@ -5,7 +5,6 @@ import org.junit.Test
 import java.util.concurrent.TimeUnit
 
 class TimeFormatTest {
-
     @Test
     fun `relativeTime buckets deltas into just-now, minutes, hours, days, weeks`() {
         val now = 1_000_000_000L

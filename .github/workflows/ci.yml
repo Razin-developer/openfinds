@@ -35,6 +35,12 @@ jobs:
       - name: Lint
         run: ./gradlew lint --stacktrace
 
+      - name: ktlint
+        run: ./gradlew ktlintCheck --stacktrace
+
+      - name: detekt
+        run: ./gradlew detekt --stacktrace
+
       - name: Unit tests
         run: ./gradlew test --stacktrace
 

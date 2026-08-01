@@ -1,9 +1,13 @@
 package com.openfinds.app.core.ui.format
 
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 /** A short, human "3m ago" / "2h ago" style relative timestamp for last-seen labels. */
-fun relativeTime(epochMillis: Long, nowMillis: Long = System.currentTimeMillis()): String {
+fun relativeTime(
+    epochMillis: Long,
+    nowMillis: Long = System.currentTimeMillis(),
+): String {
     val deltaMs = (nowMillis - epochMillis).coerceAtLeast(0)
     return when {
         deltaMs < TimeUnit.MINUTES.toMillis(1) -> "just now"
@@ -23,7 +27,7 @@ fun formatBytes(bytes: Long): String {
         value /= 1024
         unitIndex++
     }
-    return if (unitIndex == 0) "${bytes} B" else String.format("%.1f %s", value, units[unitIndex])
+    return if (unitIndex == 0) "$bytes B" else String.format(Locale.US, "%.1f %s", value, units[unitIndex])
 }
 
 fun formatDuration(millis: Long): String {

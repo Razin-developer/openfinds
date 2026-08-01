@@ -27,7 +27,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -43,13 +42,13 @@ fun PairScanQrScreen(
     onPaired: () -> Unit,
     viewModel: PairDiscoverViewModel = hiltViewModel(),
 ) {
-    val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     var hasDecoded by remember { mutableStateOf(false) }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val onDecodedState = rememberUpdatedState<(QrPairingPayload) -> Unit> { payload ->
-        viewModel.pairWithQrPayload(payload)
-    }
+    val onDecodedState =
+        rememberUpdatedState<(QrPairingPayload) -> Unit> { payload ->
+            viewModel.pairWithQrPayload(payload)
+        }
 
     Box(modifier = Modifier.fillMaxSize()) {
         AndroidView(
@@ -61,23 +60,24 @@ fun PairScanQrScreen(
                     providerFuture.addListener({
                         val cameraProvider = providerFuture.get()
                         val preview = Preview.Builder().build().also { it.surfaceProvider = surfaceProvider }
-                        val analysis = ImageAnalysis.Builder()
-                            .setTargetResolution(Size(1280, 720))
-                            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                            .build()
-                            .also {
-                                it.setAnalyzer(
-                                    cameraExecutor,
-                                    QrScannerAnalyzer { text ->
-                                        if (!hasDecoded) {
-                                            QrPairingPayload.decode(text)?.let { payload ->
-                                                hasDecoded = true
-                                                onDecodedState.value(payload)
+                        val analysis =
+                            ImageAnalysis.Builder()
+                                .setTargetResolution(Size(1280, 720))
+                                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                                .build()
+                                .also {
+                                    it.setAnalyzer(
+                                        cameraExecutor,
+                                        QrScannerAnalyzer { text ->
+                                            if (!hasDecoded) {
+                                                QrPairingPayload.decode(text)?.let { payload ->
+                                                    hasDecoded = true
+                                                    onDecodedState.value(payload)
+                                                }
                                             }
-                                        }
-                                    },
-                                )
-                            }
+                                        },
+                                    )
+                                }
                         runCatching {
                             cameraProvider.unbindAll()
                             cameraProvider.bindToLifecycle(
@@ -106,16 +106,20 @@ fun PairScanQrScreen(
     }
 
     when (val state = uiState) {
-        is PairingUiState.Connecting -> AlertDialog(
-            onDismissRequest = {},
-            title = { Text("Pairing…") },
-            text = { CircularProgressIndicator() },
-            confirmButton = {},
-        )
+        is PairingUiState.Connecting ->
+            AlertDialog(
+                onDismissRequest = {},
+                title = { Text("Pairing…") },
+                text = { CircularProgressIndicator() },
+                confirmButton = {},
+            )
         is PairingUiState.Result -> {
             val outcome = state.outcome
             AlertDialog(
-                onDismissRequest = { viewModel.resetUiState(); hasDecoded = false },
+                onDismissRequest = {
+                    viewModel.resetUiState()
+                    hasDecoded = false
+                },
                 title = { Text(if (outcome is PairingOutcome.Success) "Paired!" else "Pairing failed") },
                 text = {
                     Text(

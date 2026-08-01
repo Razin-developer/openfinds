@@ -18,7 +18,6 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
     private var pendingPairingDeviceName: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {

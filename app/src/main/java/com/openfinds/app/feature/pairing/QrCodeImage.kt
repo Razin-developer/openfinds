@@ -12,12 +12,19 @@ import com.google.zxing.BarcodeFormat
 import com.google.zxing.qrcode.QRCodeWriter
 
 @Composable
-fun QrCodeImage(content: String, modifier: Modifier = Modifier, sizeDp: Int = 240) {
+fun QrCodeImage(
+    content: String,
+    modifier: Modifier = Modifier,
+    sizeDp: Int = 240,
+) {
     val bitmap = remember(content) { encodeQrBitmap(content, 512) }
     Image(bitmap = bitmap.asImageBitmap(), contentDescription = "Pairing QR code", modifier = modifier.size(sizeDp.dp))
 }
 
-private fun encodeQrBitmap(content: String, sizePx: Int): Bitmap {
+private fun encodeQrBitmap(
+    content: String,
+    sizePx: Int,
+): Bitmap {
     val matrix = QRCodeWriter().encode(content, BarcodeFormat.QR_CODE, sizePx, sizePx)
     val bitmap = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.RGB_565)
     for (x in 0 until sizePx) {

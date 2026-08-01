@@ -8,12 +8,15 @@ import com.google.crypto.tink.subtle.AesGcmJce
  * produced by [PairingCrypto.deriveSessionKey].
  */
 class SessionCipher(sessionKey: ByteArray) {
-
     private val aead = AesGcmJce(sessionKey)
 
-    fun encrypt(plaintext: ByteArray, associatedData: ByteArray = ByteArray(0)): ByteArray =
-        aead.encrypt(plaintext, associatedData)
+    fun encrypt(
+        plaintext: ByteArray,
+        associatedData: ByteArray = ByteArray(0),
+    ): ByteArray = aead.encrypt(plaintext, associatedData)
 
-    fun decrypt(ciphertext: ByteArray, associatedData: ByteArray = ByteArray(0)): ByteArray =
-        aead.decrypt(ciphertext, associatedData)
+    fun decrypt(
+        ciphertext: ByteArray,
+        associatedData: ByteArray = ByteArray(0),
+    ): ByteArray = aead.decrypt(ciphertext, associatedData)
 }

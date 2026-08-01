@@ -15,10 +15,11 @@ Thanks for considering a contribution. OpenFind is a small, focused, privacy-fir
    ```bash
    ./gradlew :app:assembleDebug
    ```
-3. Run tests before opening a PR:
+3. Run tests and static analysis before opening a PR:
    ```bash
-   ./gradlew test lint
+   ./gradlew test lint ktlintCheck detekt
    ```
+   Auto-fix formatting issues with `./gradlew ktlintFormat`.
 
 ## Commit style
 

@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.openfinds.app.core.domain.model.ConnectionState
+import com.openfinds.app.core.ui.components.MissingPermissionsBanner
 import com.openfinds.app.feature.devices.DeviceListItem
 import com.openfinds.app.feature.devices.DevicesViewModel
 
@@ -51,6 +52,8 @@ fun HomeScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
+            item { MissingPermissionsBanner() }
+
             item {
                 Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
                     Column(modifier = Modifier.padding(20.dp)) {

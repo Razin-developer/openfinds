@@ -15,7 +15,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.QrCode
 import androidx.compose.material.icons.outlined.Wifi
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -25,7 +24,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -53,6 +51,7 @@ fun PairDiscoverScreen(
     viewModel: PairDiscoverViewModel = hiltViewModel(),
 ) {
     val nearbyDevices by viewModel.nearbyDevices.collectAsStateWithLifecycle()
+    val bleNearbySignal by viewModel.bleNearbySignal.collectAsStateWithLifecycle()
     val activePin by viewModel.activePin.collectAsStateWithLifecycle()
     val myQrPayload by viewModel.myQrPayload.collectAsStateWithLifecycle()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -61,7 +60,12 @@ fun PairDiscoverScreen(
     var pinEntryTarget by remember { mutableStateOf<DiscoveredDevice?>(null) }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Pair a device") }, navigationIcon = { com.openfinds.app.core.ui.components.BackIconButton(onBack) }) },
+        topBar = {
+            TopAppBar(
+                title = { Text("Pair a device") },
+                navigationIcon = { com.openfinds.app.core.ui.components.BackIconButton(onBack) },
+            )
+        },
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -79,6 +83,15 @@ fun PairDiscoverScreen(
                 OutlinedButton(onClick = { viewModel.startPinPairing() }, modifier = Modifier.weight(1f)) {
                     Text("Show my PIN")
                 }
+            }
+
+            if (bleNearbySignal) {
+                Spacer(Modifier.height(12.dp))
+                Text(
+                    "A nearby device was also detected over Bluetooth.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
 
             Spacer(Modifier.height(24.dp))
@@ -104,7 +117,11 @@ fun PairDiscoverScreen(
                             ) {
                                 Column {
                                     Text(device.serviceName, style = MaterialTheme.typography.titleSmall)
-                                    Text(device.host, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    Text(
+                                        device.host,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
                                 }
                                 TextButton(onClick = { pinEntryTarget = device }) { Text("Pair") }
                             }
@@ -123,7 +140,12 @@ fun PairDiscoverScreen(
                 Column {
                     Text("Enter this on the other device within a minute:", style = MaterialTheme.typography.bodyMedium)
                     Spacer(Modifier.height(12.dp))
-                    Text(pin, style = MaterialTheme.typography.displaySmall, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+                    Text(
+                        pin,
+                        style = MaterialTheme.typography.displaySmall,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
                 }
             },
             confirmButton = { TextButton(onClick = { viewModel.stopPinPairing() }) { Text("Done") } },
@@ -182,12 +204,13 @@ fun PairDiscoverScreen(
     }
 
     when (val state = uiState) {
-        is PairingUiState.Connecting -> AlertDialog(
-            onDismissRequest = {},
-            title = { Text("Pairing…") },
-            text = { CircularProgressIndicator() },
-            confirmButton = {},
-        )
+        is PairingUiState.Connecting ->
+            AlertDialog(
+                onDismissRequest = {},
+                title = { Text("Pairing…") },
+                text = { CircularProgressIndicator() },
+                confirmButton = {},
+            )
         is PairingUiState.Result -> {
             val outcome = state.outcome
             AlertDialog(

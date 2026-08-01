@@ -6,6 +6,9 @@ import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStoreFile
 import androidx.room.Room
+import com.openfinds.app.core.data.local.DeviceGroupDao
+import com.openfinds.app.core.data.local.DeviceHistoryDao
+import com.openfinds.app.core.data.local.MIGRATION_1_2
 import com.openfinds.app.core.data.local.OpenFindDatabase
 import com.openfinds.app.core.data.local.TrustedDeviceDao
 import dagger.Module
@@ -21,19 +24,29 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object DataModule {
-
     @Provides
     @Singleton
-    fun provideDatabase(@ApplicationContext context: Context): OpenFindDatabase =
+    fun provideDatabase(
+        @ApplicationContext context: Context,
+    ): OpenFindDatabase =
         Room.databaseBuilder(context, OpenFindDatabase::class.java, "openfind.db")
+            .addMigrations(MIGRATION_1_2)
             .build()
 
     @Provides
     fun provideTrustedDeviceDao(database: OpenFindDatabase): TrustedDeviceDao = database.trustedDeviceDao()
 
     @Provides
+    fun provideDeviceGroupDao(database: OpenFindDatabase): DeviceGroupDao = database.deviceGroupDao()
+
+    @Provides
+    fun provideDeviceHistoryDao(database: OpenFindDatabase): DeviceHistoryDao = database.deviceHistoryDao()
+
+    @Provides
     @Singleton
-    fun provideDataStore(@ApplicationContext context: Context): DataStore<Preferences> =
+    fun provideDataStore(
+        @ApplicationContext context: Context,
+    ): DataStore<Preferences> =
         PreferenceDataStoreFactory.create(
             produceFile = { context.preferencesDataStoreFile("openfind_prefs") },
         )

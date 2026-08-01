@@ -37,52 +37,55 @@ import com.google.accompanist.permissions.rememberMultiplePermissionsState
 
 private data class PermissionGroup(val icon: ImageVector, val title: String, val rationale: String, val permissions: List<String>)
 
-private fun permissionGroups(): List<PermissionGroup> = buildList {
-    add(
-        PermissionGroup(
-            icon = Icons.Outlined.Wifi,
-            title = "Find devices on your Wi-Fi",
-            rationale = "Lets OpenFind discover other OpenFind phones on the same network. Nothing is sent outside your Wi-Fi.",
-            permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                listOf(Manifest.permission.NEARBY_WIFI_DEVICES)
-            } else {
-                listOf(Manifest.permission.ACCESS_FINE_LOCATION)
-            },
-        ),
-    )
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+private fun permissionGroups(): List<PermissionGroup> =
+    buildList {
         add(
             PermissionGroup(
-                icon = Icons.Outlined.Bluetooth,
-                title = "Bluetooth-assisted discovery",
-                rationale = "Speeds up finding nearby trusted devices even before they join the same Wi-Fi network.",
-                permissions = listOf(
-                    Manifest.permission.BLUETOOTH_SCAN,
-                    Manifest.permission.BLUETOOTH_CONNECT,
-                    Manifest.permission.BLUETOOTH_ADVERTISE,
+                icon = Icons.Outlined.Wifi,
+                title = "Find devices on your Wi-Fi",
+                rationale = "Lets OpenFind discover other OpenFind phones on the same network. Nothing is sent outside your Wi-Fi.",
+                permissions =
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        listOf(Manifest.permission.NEARBY_WIFI_DEVICES)
+                    } else {
+                        listOf(Manifest.permission.ACCESS_FINE_LOCATION)
+                    },
+            ),
+        )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            add(
+                PermissionGroup(
+                    icon = Icons.Outlined.Bluetooth,
+                    title = "Bluetooth-assisted discovery",
+                    rationale = "Speeds up finding nearby trusted devices even before they join the same Wi-Fi network.",
+                    permissions =
+                        listOf(
+                            Manifest.permission.BLUETOOTH_SCAN,
+                            Manifest.permission.BLUETOOTH_CONNECT,
+                            Manifest.permission.BLUETOOTH_ADVERTISE,
+                        ),
                 ),
-            ),
-        )
-    }
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            )
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            add(
+                PermissionGroup(
+                    icon = Icons.Outlined.Notifications,
+                    title = "Pairing & find alerts",
+                    rationale = "So you're notified when a device wants to pair, or when someone is trying to find this phone.",
+                    permissions = listOf(Manifest.permission.POST_NOTIFICATIONS),
+                ),
+            )
+        }
         add(
             PermissionGroup(
-                icon = Icons.Outlined.Notifications,
-                title = "Pairing & find alerts",
-                rationale = "So you're notified when a device wants to pair, or when someone is trying to find this phone.",
-                permissions = listOf(Manifest.permission.POST_NOTIFICATIONS),
+                icon = Icons.Outlined.CameraAlt,
+                title = "Scan pairing QR codes",
+                rationale = "Only used while you're actively scanning a QR code to pair a new device.",
+                permissions = listOf(Manifest.permission.CAMERA),
             ),
         )
     }
-    add(
-        PermissionGroup(
-            icon = Icons.Outlined.CameraAlt,
-            title = "Scan pairing QR codes",
-            rationale = "Only used while you're actively scanning a QR code to pair a new device.",
-            permissions = listOf(Manifest.permission.CAMERA),
-        ),
-    )
-}
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable

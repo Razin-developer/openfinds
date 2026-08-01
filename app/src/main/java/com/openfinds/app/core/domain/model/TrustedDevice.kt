@@ -6,11 +6,13 @@ data class TrustedDevice(
     val displayName: String,
     val nickname: String?,
     val avatarColorArgb: Int,
+    val avatarImageUri: String? = null,
     val publicKeyBase64: String,
     val lastKnownHost: String?,
     val lastKnownPort: Int?,
     val pairedAtEpochMillis: Long,
     val lastSeenEpochMillis: Long?,
+    val groupId: String? = null,
     val connectionState: ConnectionState,
 ) {
     val name: String get() = nickname?.takeIf { it.isNotBlank() } ?: displayName
@@ -36,4 +38,25 @@ data class DeviceSnapshot(
     val ramTotalBytes: Long,
     val uptimeMillis: Long,
     val capturedAtEpochMillis: Long,
+)
+
+/** A user-created label for organizing trusted devices (e.g. "Family", "Work"). */
+data class DeviceGroup(
+    val id: String,
+    val name: String,
+    val colorArgb: Int,
+    val createdAtEpochMillis: Long,
+    val deviceCount: Int,
+)
+
+enum class HistoryEventType { PAIRED, FORGOTTEN, CONNECTED, DISCONNECTED, FIND_TRIGGERED, RENAMED, OTHER }
+
+/** A single logged event for the device history feed. */
+data class HistoryEvent(
+    val id: String,
+    val deviceId: String,
+    val deviceName: String,
+    val type: HistoryEventType,
+    val timestampEpochMillis: Long,
+    val detail: String? = null,
 )

@@ -13,26 +13,28 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class SettingsViewModel @Inject constructor(
-    private val preferencesRepository: UserPreferencesRepository,
-) : ViewModel() {
+class SettingsViewModel
+    @Inject
+    constructor(
+        private val preferencesRepository: UserPreferencesRepository,
+    ) : ViewModel() {
+        val preferences: StateFlow<AppPreferences> =
+            preferencesRepository.preferences
+                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), AppPreferences())
 
-    val preferences: StateFlow<AppPreferences> = preferencesRepository.preferences
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), AppPreferences())
+        fun setThemeMode(mode: AppThemeMode) {
+            viewModelScope.launch { preferencesRepository.setThemeMode(mode) }
+        }
 
-    fun setThemeMode(mode: AppThemeMode) {
-        viewModelScope.launch { preferencesRepository.setThemeMode(mode) }
+        fun setBackgroundMonitoringEnabled(enabled: Boolean) {
+            viewModelScope.launch { preferencesRepository.setBackgroundMonitoringEnabled(enabled) }
+        }
+
+        fun setAutoReconnectEnabled(enabled: Boolean) {
+            viewModelScope.launch { preferencesRepository.setAutoReconnectEnabled(enabled) }
+        }
+
+        fun setDeviceDisplayName(name: String) {
+            viewModelScope.launch { preferencesRepository.setDeviceDisplayName(name) }
+        }
     }
-
-    fun setBackgroundMonitoringEnabled(enabled: Boolean) {
-        viewModelScope.launch { preferencesRepository.setBackgroundMonitoringEnabled(enabled) }
-    }
-
-    fun setAutoReconnectEnabled(enabled: Boolean) {
-        viewModelScope.launch { preferencesRepository.setAutoReconnectEnabled(enabled) }
-    }
-
-    fun setDeviceDisplayName(name: String) {
-        viewModelScope.launch { preferencesRepository.setDeviceDisplayName(name) }
-    }
-}

@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TrustedDeviceDao {
-
     @Query("SELECT * FROM trusted_devices ORDER BY displayName COLLATE NOCASE ASC")
     fun observeAll(): Flow<List<TrustedDeviceEntity>>
 
@@ -27,14 +26,31 @@ interface TrustedDeviceDao {
     suspend fun update(entity: TrustedDeviceEntity)
 
     @Query("UPDATE trusted_devices SET lastSeenEpochMillis = :timestamp, lastKnownHost = :host, lastKnownPort = :port WHERE id = :id")
-    suspend fun updateLastSeen(id: String, timestamp: Long, host: String, port: Int)
+    suspend fun updateLastSeen(
+        id: String,
+        timestamp: Long,
+        host: String,
+        port: Int,
+    )
 
     @Query("UPDATE trusted_devices SET nickname = :nickname WHERE id = :id")
-    suspend fun renameDevice(id: String, nickname: String?)
+    suspend fun renameDevice(
+        id: String,
+        nickname: String?,
+    )
+
+    @Query("UPDATE trusted_devices SET avatarImageUri = :imageUri WHERE id = :id")
+    suspend fun updateAvatarImage(
+        id: String,
+        imageUri: String?,
+    )
 
     @Delete
     suspend fun delete(entity: TrustedDeviceEntity)
 
     @Query("DELETE FROM trusted_devices WHERE id = :id")
     suspend fun deleteById(id: String)
+
+    @Query("DELETE FROM trusted_devices")
+    suspend fun deleteAll()
 }

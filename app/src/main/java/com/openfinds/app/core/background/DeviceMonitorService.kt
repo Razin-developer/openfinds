@@ -11,8 +11,9 @@ import com.openfinds.app.MainActivity
 import com.openfinds.app.R
 import com.openfinds.app.core.crypto.DeviceIdentityStore
 import com.openfinds.app.core.data.datastore.UserPreferencesRepository
-import com.openfinds.app.core.network.NsdAdvertiser
+import com.openfinds.app.core.network.BleAdvertiser
 import com.openfinds.app.core.network.NetworkConstants
+import com.openfinds.app.core.network.NsdAdvertiser
 import com.openfinds.app.core.network.P2pConnectionManager
 import com.openfinds.app.core.network.UdpPresenceBeacon
 import dagger.hilt.android.AndroidEntryPoint
@@ -34,12 +35,17 @@ import javax.inject.Inject
  */
 @AndroidEntryPoint
 class DeviceMonitorService : Service() {
-
     @Inject lateinit var connectionManager: P2pConnectionManager
+
     @Inject lateinit var nsdAdvertiser: NsdAdvertiser
+
     @Inject lateinit var udpPresenceBeacon: UdpPresenceBeacon
+
     @Inject lateinit var identityStore: DeviceIdentityStore
+
     @Inject lateinit var preferencesRepository: UserPreferencesRepository
+
+    @Inject lateinit var bleAdvertiser: BleAdvertiser
 
     private var serviceJob: Job = SupervisorJob()
     private lateinit var serviceScope: CoroutineScope
@@ -50,7 +56,11 @@ class DeviceMonitorService : Service() {
         NotificationChannels.ensureCreated(this)
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+    override fun onStartCommand(
+        intent: Intent?,
+        flags: Int,
+        startId: Int,
+    ): Int {
         ServiceCompat.startForeground(
             this,
             NOTIFICATION_ID,
@@ -71,6 +81,8 @@ class DeviceMonitorService : Service() {
             connectionManager.start()
             runCatching { nsdAdvertiser.start(identity.deviceId, deviceName, NetworkConstants.TCP_PORT) }
                 .onFailure { Timber.w(it, "NSD advertise failed, relying on UDP beacon only") }
+            runCatching { bleAdvertiser.start() }
+                .onFailure { Timber.d(it, "BLE advertise unavailable") }
             launch { udpPresenceBeacon.broadcastLoop(identity.deviceId, deviceName, NetworkConstants.TCP_PORT) }
             launch {
                 connectionManager.pairingRequests.collect { request ->
@@ -81,12 +93,13 @@ class DeviceMonitorService : Service() {
     }
 
     private fun buildNotification(): Notification {
-        val openAppIntent = PendingIntent.getActivity(
-            this,
-            0,
-            Intent(this, MainActivity::class.java),
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
-        )
+        val openAppIntent =
+            PendingIntent.getActivity(
+                this,
+                0,
+                Intent(this, MainActivity::class.java),
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+            )
         return NotificationCompat.Builder(this, NotificationChannels.MONITORING)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(getString(R.string.notification_monitoring_title))
@@ -99,6 +112,7 @@ class DeviceMonitorService : Service() {
 
     override fun onDestroy() {
         nsdAdvertiser.stop()
+        bleAdvertiser.stop()
         connectionManager.stop()
         serviceJob.cancel()
         super.onDestroy()

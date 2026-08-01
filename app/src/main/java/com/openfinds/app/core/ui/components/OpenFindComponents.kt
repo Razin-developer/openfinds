@@ -42,9 +42,10 @@ fun EmptyState(
     action: (@Composable () -> Unit)? = null,
 ) {
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(32.dp),
+        modifier =
+            modifier
+                .fillMaxSize()
+                .padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
@@ -71,7 +72,10 @@ fun EmptyState(
 }
 
 @Composable
-fun FullScreenLoading(modifier: Modifier = Modifier, label: String? = null) {
+fun FullScreenLoading(
+    modifier: Modifier = Modifier,
+    label: String? = null,
+) {
     Column(
         modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -121,7 +125,10 @@ fun BackIconButton(onBack: () -> Unit) {
 
 /** A soft, looping pulse used behind the online/searching indicators and Find Device mode. */
 @Composable
-fun PulsingDot(modifier: Modifier = Modifier, color: androidx.compose.ui.graphics.Color) {
+fun PulsingDot(
+    modifier: Modifier = Modifier,
+    color: androidx.compose.ui.graphics.Color,
+) {
     val transition = rememberInfiniteTransition(label = "pulse")
     val scale by transition.animateFloat(
         initialValue = 0.6f,
@@ -130,9 +137,10 @@ fun PulsingDot(modifier: Modifier = Modifier, color: androidx.compose.ui.graphic
         label = "pulseScale",
     )
     Box(
-        modifier = modifier
-            .size(10.dp)
-            .alpha(scale)
-            .background(color, CircleShape),
+        modifier =
+            modifier
+                .size(10.dp)
+                .alpha(scale)
+                .background(color, CircleShape),
     )
 }

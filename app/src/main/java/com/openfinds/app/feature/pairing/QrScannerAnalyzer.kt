@@ -9,7 +9,6 @@ import com.google.zxing.common.HybridBinarizer
 
 /** Decodes QR codes from the live CameraX preview using ZXing against the Y-plane luminance data. */
 class QrScannerAnalyzer(private val onDecoded: (String) -> Unit) : ImageAnalysis.Analyzer {
-
     private val reader = MultiFormatReader()
 
     override fun analyze(image: ImageProxy) {
@@ -19,9 +18,17 @@ class QrScannerAnalyzer(private val onDecoded: (String) -> Unit) : ImageAnalysis
             return
         }
         val data = ByteArray(plane.buffer.remaining()).also { plane.buffer.get(it) }
-        val source = PlanarYUVLuminanceSource(
-            data, image.width, image.height, 0, 0, image.width, image.height, false,
-        )
+        val source =
+            PlanarYUVLuminanceSource(
+                data,
+                image.width,
+                image.height,
+                0,
+                0,
+                image.width,
+                image.height,
+                false,
+            )
         runCatching {
             val bitmap = BinaryBitmap(HybridBinarizer(source))
             reader.decodeWithState(bitmap).text

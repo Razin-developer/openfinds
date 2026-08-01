@@ -24,19 +24,20 @@ import com.openfinds.app.core.ui.components.BackIconButton
 
 private data class OssLibrary(val name: String, val license: String, val url: String)
 
-private val ossLibraries = listOf(
-    OssLibrary("Jetpack Compose", "Apache License 2.0", "https://developer.android.com/jetpack/compose"),
-    OssLibrary("Kotlin Coroutines", "Apache License 2.0", "https://github.com/Kotlin/kotlinx.coroutines"),
-    OssLibrary("Kotlinx Serialization", "Apache License 2.0", "https://github.com/Kotlin/kotlinx.serialization"),
-    OssLibrary("Dagger Hilt", "Apache License 2.0", "https://github.com/google/dagger"),
-    OssLibrary("Room", "Apache License 2.0", "https://developer.android.com/jetpack/androidx/releases/room"),
-    OssLibrary("Google Tink", "Apache License 2.0", "https://github.com/tink-crypto/tink"),
-    OssLibrary("Timber", "Apache License 2.0", "https://github.com/JakeWharton/timber"),
-    OssLibrary("CameraX", "Apache License 2.0", "https://developer.android.com/training/camerax"),
-    OssLibrary("ZXing core", "Apache License 2.0", "https://github.com/zxing/zxing"),
-    OssLibrary("Coil", "Apache License 2.0", "https://github.com/coil-kt/coil"),
-    OssLibrary("Accompanist Permissions", "Apache License 2.0", "https://github.com/google/accompanist"),
-)
+private val ossLibraries =
+    listOf(
+        OssLibrary("Jetpack Compose", "Apache License 2.0", "https://developer.android.com/jetpack/compose"),
+        OssLibrary("Kotlin Coroutines", "Apache License 2.0", "https://github.com/Kotlin/kotlinx.coroutines"),
+        OssLibrary("Kotlinx Serialization", "Apache License 2.0", "https://github.com/Kotlin/kotlinx.serialization"),
+        OssLibrary("Dagger Hilt", "Apache License 2.0", "https://github.com/google/dagger"),
+        OssLibrary("Room", "Apache License 2.0", "https://developer.android.com/jetpack/androidx/releases/room"),
+        OssLibrary("Google Tink", "Apache License 2.0", "https://github.com/tink-crypto/tink"),
+        OssLibrary("Timber", "Apache License 2.0", "https://github.com/JakeWharton/timber"),
+        OssLibrary("CameraX", "Apache License 2.0", "https://developer.android.com/training/camerax"),
+        OssLibrary("ZXing core", "Apache License 2.0", "https://github.com/zxing/zxing"),
+        OssLibrary("Coil", "Apache License 2.0", "https://github.com/coil-kt/coil"),
+        OssLibrary("Accompanist Permissions", "Apache License 2.0", "https://github.com/google/accompanist"),
+    )
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -91,7 +92,10 @@ fun PrivacyPolicyScreen(onBack: () -> Unit) {
 }
 
 @Composable
-private fun PrivacySection(title: String, body: String) {
+private fun PrivacySection(
+    title: String,
+    body: String,
+) {
     Column {
         Text(title, style = MaterialTheme.typography.titleMedium)
         Text(body, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -111,7 +115,11 @@ fun LicensesScreen(onBack: () -> Unit) {
                 Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(library.name, style = MaterialTheme.typography.titleSmall)
-                        Text(library.license, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(
+                            library.license,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
                 }
             }

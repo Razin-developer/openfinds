@@ -31,19 +31,29 @@ import androidx.compose.ui.unit.dp
 
 private data class WelcomeHighlight(val icon: ImageVector, val title: String, val body: String)
 
-private val highlights = listOf(
-    WelcomeHighlight(Icons.Outlined.WifiTethering, "No cloud, ever", "Devices talk directly over your Wi-Fi — nothing leaves your network."),
-    WelcomeHighlight(Icons.Outlined.Lock, "Encrypted pairing", "Every device you trust is verified with a QR code or PIN, then end-to-end encrypted."),
-    WelcomeHighlight(Icons.Outlined.Bolt, "Instant find", "Ring, vibrate, or flash a trusted phone the moment you need it."),
-)
+private val highlights =
+    listOf(
+        WelcomeHighlight(
+            Icons.Outlined.WifiTethering,
+            "No cloud, ever",
+            "Devices talk directly over your Wi-Fi — nothing leaves your network.",
+        ),
+        WelcomeHighlight(
+            Icons.Outlined.Lock,
+            "Encrypted pairing",
+            "Every device you trust is verified with a QR code or PIN, then end-to-end encrypted.",
+        ),
+        WelcomeHighlight(Icons.Outlined.Bolt, "Instant find", "Ring, vibrate, or flash a trusted phone the moment you need it."),
+    )
 
 @Composable
 fun WelcomeScreen(onGetStarted: () -> Unit) {
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(PaddingValues(horizontal = 28.dp, vertical = 40.dp)),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(PaddingValues(horizontal = 28.dp, vertical = 40.dp)),
             verticalArrangement = Arrangement.SpaceBetween,
         ) {
             Column {
@@ -80,9 +90,10 @@ fun WelcomeScreen(onGetStarted: () -> Unit) {
 private fun HighlightRow(highlight: WelcomeHighlight) {
     Row(verticalAlignment = Alignment.Top) {
         Box(
-            modifier = Modifier
-                .size(44.dp)
-                .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(12.dp)),
+            modifier =
+                Modifier
+                    .size(44.dp)
+                    .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(12.dp)),
             contentAlignment = Alignment.Center,
         ) {
             Icon(highlight.icon, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimaryContainer)

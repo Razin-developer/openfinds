@@ -1,19 +1,17 @@
 # Roadmap
 
-OpenFind's first release (`v0.1.0`) covers the core vertical slice: discovery, pairing, dashboard, and find mode. Planned next:
+OpenFind's first release covers discovery, pairing, dashboard, find mode, groups, history, diagnostics, developer options, rich notifications, and BLE-assisted discovery. Planned next:
 
 ## Near-term
-- Device groups (organize trusted devices into named groups)
-- Device history log (connection/pairing events, exportable)
-- Diagnostics screen + on-device log export
-- Developer options screen (protocol/log verbosity toggles)
-- Richer notification channels: grouped notifications, inline pairing accept/reject actions, low-battery alerts for trusted devices
+- History log filtering by device/event type, and per-device history export
+- Inline accept/reject actions directly on the pairing-request notification (currently opens the app)
+- Notification-level toggles for individual alert types beyond the OS channel settings screen
 
 ## Hardening
 - Replace PIN-mixed-HKDF pairing with a proper PAKE (SPAKE2) — see [SECURITY.md](SECURITY.md)
 - Optional out-of-band fingerprint verification for QR pairing
 
 ## Engineering
-- Split into Gradle feature modules (currently a single `:app` module organized by package, to keep the initial build simple)
-- Full instrumented UI test suite (Compose UI tests) and CI matrix across API levels
-- Architecture Decision Records (ADRs) for major design choices
+- Split into Gradle feature modules (see [ADR 0006](docs/adr/0006-split-into-gradle-feature-modules.md) — proposed but deliberately not yet executed, to avoid destabilizing a verified, working build without on-device re-testing available in this environment)
+- CI matrix across multiple API levels for instrumented tests
+- Detekt custom rules specific to the crypto/network layers (e.g. flag any new cleartext socket usage)

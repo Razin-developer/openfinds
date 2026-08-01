@@ -12,21 +12,24 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class MainActivityViewModel @Inject constructor(
-    preferencesRepository: UserPreferencesRepository,
-) : ViewModel() {
+class MainActivityViewModel
+    @Inject
+    constructor(
+        preferencesRepository: UserPreferencesRepository,
+    ) : ViewModel() {
+        private val _startDestination = MutableStateFlow<OpenFindDestination?>(null)
+        val startDestination: StateFlow<OpenFindDestination?> = _startDestination
 
-    private val _startDestination = MutableStateFlow<OpenFindDestination?>(null)
-    val startDestination: StateFlow<OpenFindDestination?> = _startDestination
-
-    init {
-        viewModelScope.launch {
-            val prefs = preferencesRepository.preferences.first()
-            _startDestination.value = when {
-                !prefs.onboardingCompleted -> OpenFindDestination.Welcome
-                !prefs.permissionsAcknowledged -> OpenFindDestination.Permissions
-                else -> OpenFindDestination.Home
+        init {
+            viewModelScope.launch {
+                val prefs = preferencesRepository.preferences.first()
+                _startDestination.value =
+                    when {
+                        !prefs.onboardingCompleted -> OpenFindDestination.Welcome
+                        !prefs.permissionsAcknowledged -> OpenFindDestination.Permissions
+                        prefs.lastSeenWhatsNewVersionCode in 1 until BuildConfig.VERSION_CODE -> OpenFindDestination.WhatsNew
+                        else -> OpenFindDestination.Home
+                    }
             }
         }
     }
-}

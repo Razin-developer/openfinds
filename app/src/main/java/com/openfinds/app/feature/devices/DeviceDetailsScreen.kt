@@ -1,6 +1,10 @@
 package com.openfinds.app.feature.devices
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -23,6 +27,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -52,11 +58,13 @@ fun DeviceDetailsScreen(
     onBack: () -> Unit,
     onFindDevice: () -> Unit,
     onForgotten: () -> Unit,
+    onViewHistory: () -> Unit,
     viewModel: DeviceDetailsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var showRenameDialog by remember { mutableStateOf(false) }
     var showForgetDialog by remember { mutableStateOf(false) }
+    var groupMenuOpen by remember { mutableStateOf(false) }
     val device = uiState.device
 
     Scaffold(
@@ -105,23 +113,44 @@ fun DeviceDetailsScreen(
                         val snapshot = uiState.snapshot
                         when {
                             uiState.isRefreshing && snapshot == null -> CircularProgressIndicator(modifier = Modifier.padding(16.dp))
-                            uiState.errorMessage != null && snapshot == null -> Text(
-                                uiState.errorMessage ?: "",
-                                color = MaterialTheme.colorScheme.error,
-                                modifier = Modifier.padding(top = 8.dp),
-                            )
+                            uiState.errorMessage != null && snapshot == null ->
+                                Text(
+                                    uiState.errorMessage ?: "",
+                                    color = MaterialTheme.colorScheme.error,
+                                    modifier = Modifier.padding(top = 8.dp),
+                                )
                             snapshot != null -> {
                                 Spacer(Modifier.height(12.dp))
-                                StatRow(Icons.Outlined.BatteryFull, "Battery", "${snapshot.batteryPercent}%" + if (snapshot.isCharging) " (charging)" else "")
-                                LinearProgressIndicator(progress = { snapshot.batteryPercent / 100f }, modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp))
-
-                                StatRow(Icons.Outlined.Storage, "Storage", "${formatBytes(snapshot.storageUsedBytes)} / ${formatBytes(snapshot.storageTotalBytes)}")
+                                StatRow(
+                                    Icons.Outlined.BatteryFull,
+                                    "Battery",
+                                    "${snapshot.batteryPercent}%" + if (snapshot.isCharging) " (charging)" else "",
+                                )
                                 LinearProgressIndicator(
-                                    progress = { (snapshot.storageUsedBytes.toFloat() / snapshot.storageTotalBytes.toFloat()).coerceIn(0f, 1f) },
+                                    progress = { snapshot.batteryPercent / 100f },
                                     modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
                                 )
 
-                                StatRow(Icons.Outlined.Memory, "Memory", "${formatBytes(snapshot.ramUsedBytes)} / ${formatBytes(snapshot.ramTotalBytes)}")
+                                StatRow(
+                                    Icons.Outlined.Storage,
+                                    "Storage",
+                                    "${formatBytes(snapshot.storageUsedBytes)} / ${formatBytes(snapshot.storageTotalBytes)}",
+                                )
+                                LinearProgressIndicator(
+                                    progress = {
+                                        (snapshot.storageUsedBytes.toFloat() / snapshot.storageTotalBytes.toFloat()).coerceIn(
+                                            0f,
+                                            1f,
+                                        )
+                                    },
+                                    modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
+                                )
+
+                                StatRow(
+                                    Icons.Outlined.Memory,
+                                    "Memory",
+                                    "${formatBytes(snapshot.ramUsedBytes)} / ${formatBytes(snapshot.ramTotalBytes)}",
+                                )
                                 LinearProgressIndicator(
                                     progress = { (snapshot.ramUsedBytes.toFloat() / snapshot.ramTotalBytes.toFloat()).coerceIn(0f, 1f) },
                                     modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
@@ -130,6 +159,33 @@ fun DeviceDetailsScreen(
                                 StatRow(Icons.Outlined.Timer, "Uptime", formatDuration(snapshot.uptimeMillis))
                             }
                         }
+                    }
+                }
+            }
+
+            item {
+                val photoPicker =
+                    rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+                        if (uri != null) viewModel.setAvatarImage(uri.toString())
+                    }
+                Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                    ) {
+                        DeviceAvatar(device = device, size = 56.dp)
+                        Spacer(Modifier.width(16.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Avatar", style = MaterialTheme.typography.titleMedium)
+                            Text(
+                                "Pick a photo, or leave it as your device's colored initial",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        TextButton(
+                            onClick = { photoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
+                        ) { Text("Choose") }
                     }
                 }
             }
@@ -145,6 +201,51 @@ fun DeviceDetailsScreen(
                     }
                 }
             }
+
+            item {
+                Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+                            Text("Group", style = MaterialTheme.typography.titleMedium)
+                            Box {
+                                TextButton(onClick = { groupMenuOpen = true }) {
+                                    Text(uiState.groups.firstOrNull { it.id == device.groupId }?.name ?: "None")
+                                }
+                                DropdownMenu(expanded = groupMenuOpen, onDismissRequest = { groupMenuOpen = false }) {
+                                    DropdownMenuItem(
+                                        text = { Text("None") },
+                                        onClick = {
+                                            viewModel.assignGroup(null)
+                                            groupMenuOpen = false
+                                        },
+                                    )
+                                    uiState.groups.forEach { group ->
+                                        DropdownMenuItem(
+                                            text = { Text(group.name) },
+                                            onClick = {
+                                                viewModel.assignGroup(group.id)
+                                                groupMenuOpen = false
+                                            },
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            item {
+                Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Text("Activity history", style = MaterialTheme.typography.titleMedium)
+                        TextButton(onClick = onViewHistory) { Text("View") }
+                    }
+                }
+            }
         }
     }
 
@@ -155,7 +256,10 @@ fun DeviceDetailsScreen(
             title = { Text("Rename device") },
             text = { OutlinedTextField(value = nickname, onValueChange = { nickname = it }, singleLine = true) },
             confirmButton = {
-                TextButton(onClick = { viewModel.rename(nickname); showRenameDialog = false }) { Text("Save") }
+                TextButton(onClick = {
+                    viewModel.rename(nickname)
+                    showRenameDialog = false
+                }) { Text("Save") }
             },
             dismissButton = { TextButton(onClick = { showRenameDialog = false }) { Text("Cancel") } },
         )
@@ -167,7 +271,10 @@ fun DeviceDetailsScreen(
             title = { Text("Forget this device?") },
             text = { Text("You'll need to pair again to reconnect.") },
             confirmButton = {
-                TextButton(onClick = { showForgetDialog = false; viewModel.forget(onForgotten) }) { Text("Forget") }
+                TextButton(onClick = {
+                    showForgetDialog = false
+                    viewModel.forget(onForgotten)
+                }) { Text("Forget") }
             },
             dismissButton = { TextButton(onClick = { showForgetDialog = false }) { Text("Cancel") } },
         )
@@ -175,7 +282,11 @@ fun DeviceDetailsScreen(
 }
 
 @Composable
-private fun StatRow(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, value: String) {
+private fun StatRow(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
+    value: String,
+) {
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
         Row {
             Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)

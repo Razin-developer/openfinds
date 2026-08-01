@@ -1,5 +1,11 @@
 package com.openfinds.app.feature.settings
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.os.PowerManager
+import android.provider.Settings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -19,6 +25,7 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -27,6 +34,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -35,13 +43,21 @@ import com.openfinds.app.core.data.datastore.AppThemeMode
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
+    onOpenGroups: () -> Unit,
+    onOpenHistory: () -> Unit,
+    onOpenNotifications: () -> Unit,
+    onOpenSecurity: () -> Unit,
+    onOpenDiagnostics: () -> Unit,
+    onOpenDeveloperSettings: () -> Unit,
     onOpenAbout: () -> Unit,
     onOpenPrivacy: () -> Unit,
-    onOpenLicenses: () -> Unit,
+    onOpenOpenSource: () -> Unit,
+    onOpenChangelog: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val prefs by viewModel.preferences.collectAsStateWithLifecycle()
     var nameDraft by remember(prefs.deviceDisplayName) { mutableStateOf(prefs.deviceDisplayName) }
+    val context = LocalContext.current
 
     Scaffold(topBar = { TopAppBar(title = { Text("Settings") }) }) { padding ->
         LazyColumn(
@@ -58,7 +74,7 @@ fun SettingsScreen(
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                     )
-                    androidx.compose.material3.TextButton(
+                    TextButton(
                         onClick = { viewModel.setDeviceDisplayName(nameDraft) },
                         modifier = Modifier.fillMaxWidth(),
                     ) { Text("Save name") }
@@ -94,24 +110,75 @@ fun SettingsScreen(
                         checked = prefs.autoReconnectEnabled,
                         onCheckedChange = viewModel::setAutoReconnectEnabled,
                     )
+                    if (isIgnoringBatteryOptimizationsSupported()) {
+                        HorizontalDivider()
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text("Battery optimization", style = MaterialTheme.typography.bodyLarge)
+                                Text(
+                                    "Exempt OpenFind so background monitoring isn't killed to save battery",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                            TextButton(onClick = { requestIgnoreBatteryOptimizations(context) }) { Text("Fix") }
+                        }
+                    }
+                    HorizontalDivider()
+                    SettingsLinkRow("Notifications", onOpenNotifications)
+                }
+            }
+
+            item {
+                SettingsSection(title = "Organize") {
+                    SettingsLinkRow("Device groups", onOpenGroups)
+                    HorizontalDivider()
+                    SettingsLinkRow("Activity history", onOpenHistory)
                 }
             }
 
             item {
                 SettingsSection(title = "About") {
+                    SettingsLinkRow("Security", onOpenSecurity)
+                    HorizontalDivider()
+                    SettingsLinkRow("Diagnostics", onOpenDiagnostics)
+                    HorizontalDivider()
+                    SettingsLinkRow("Developer options", onOpenDeveloperSettings)
+                    HorizontalDivider()
                     SettingsLinkRow("About OpenFind", onOpenAbout)
                     HorizontalDivider()
                     SettingsLinkRow("Privacy policy", onOpenPrivacy)
                     HorizontalDivider()
-                    SettingsLinkRow("Open-source licenses", onOpenLicenses)
+                    SettingsLinkRow("Open source & licenses", onOpenOpenSource)
+                    HorizontalDivider()
+                    SettingsLinkRow("Changelog", onOpenChangelog)
                 }
             }
         }
     }
 }
 
+private fun isIgnoringBatteryOptimizationsSupported(): Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+
+private fun requestIgnoreBatteryOptimizations(context: Context) {
+    val powerManager = context.getSystemService(Context.POWER_SERVICE) as? PowerManager
+    if (powerManager?.isIgnoringBatteryOptimizations(context.packageName) == true) {
+        context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", context.packageName, null)))
+        return
+    }
+    val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:${context.packageName}"))
+    context.startActivity(intent)
+}
+
 @Composable
-private fun SettingsSection(title: String, content: @Composable ColumnScope.() -> Unit) {
+private fun SettingsSection(
+    title: String,
+    content: @Composable ColumnScope.() -> Unit,
+) {
     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(title, style = MaterialTheme.typography.titleMedium)
@@ -121,7 +188,12 @@ private fun SettingsSection(title: String, content: @Composable ColumnScope.() -
 }
 
 @Composable
-private fun SettingsSwitchRow(title: String, subtitle: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+private fun SettingsSwitchRow(
+    title: String,
+    subtitle: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -136,11 +208,14 @@ private fun SettingsSwitchRow(title: String, subtitle: String, checked: Boolean,
 }
 
 @Composable
-private fun SettingsLinkRow(title: String, onClick: () -> Unit) {
+private fun SettingsLinkRow(
+    title: String,
+    onClick: () -> Unit,
+) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        androidx.compose.material3.TextButton(onClick = onClick) { Text(title) }
+        TextButton(onClick = onClick) { Text(title) }
     }
 }

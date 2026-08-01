@@ -15,8 +15,9 @@ data class QrPairingPayload(
     fun encode(): String = OpenFindJson.encodeToString(serializer(), this)
 
     companion object {
-        fun decode(raw: String): QrPairingPayload? = runCatching {
-            OpenFindJson.decodeFromString(serializer(), raw)
-        }.getOrNull()
+        fun decode(raw: String): QrPairingPayload? =
+            runCatching {
+                OpenFindJson.decodeFromString(serializer(), raw)
+            }.getOrNull()
     }
 }

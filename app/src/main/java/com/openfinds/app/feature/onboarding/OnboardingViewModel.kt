@@ -8,27 +8,29 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class OnboardingViewModel @Inject constructor(
-    private val preferencesRepository: UserPreferencesRepository,
-) : ViewModel() {
-
-    fun onGetStarted(onDone: () -> Unit) {
-        viewModelScope.launch {
-            preferencesRepository.setOnboardingCompleted(true)
-            onDone()
+class OnboardingViewModel
+    @Inject
+    constructor(
+        private val preferencesRepository: UserPreferencesRepository,
+    ) : ViewModel() {
+        fun onGetStarted(onDone: () -> Unit) {
+            viewModelScope.launch {
+                preferencesRepository.setOnboardingCompleted(true)
+                onDone()
+            }
         }
     }
-}
 
 @HiltViewModel
-class PermissionsViewModel @Inject constructor(
-    private val preferencesRepository: UserPreferencesRepository,
-) : ViewModel() {
-
-    fun onPermissionsAcknowledged(onDone: () -> Unit) {
-        viewModelScope.launch {
-            preferencesRepository.setPermissionsAcknowledged(true)
-            onDone()
+class PermissionsViewModel
+    @Inject
+    constructor(
+        private val preferencesRepository: UserPreferencesRepository,
+    ) : ViewModel() {
+        fun onPermissionsAcknowledged(onDone: () -> Unit) {
+            viewModelScope.launch {
+                preferencesRepository.setPermissionsAcknowledged(true)
+                onDone()
+            }
         }
     }
-}

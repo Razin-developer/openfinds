@@ -1,9 +1,11 @@
 package com.openfinds.app.core.network.protocol
 
-import java.io.DataInputStream
-import java.io.DataOutputStream
-import java.io.InputStream
-import java.io.OutputStream
+import io.ktor.utils.io.ByteReadChannel
+import io.ktor.utils.io.ByteWriteChannel
+import io.ktor.utils.io.readFully
+import io.ktor.utils.io.readInt
+import io.ktor.utils.io.writeFully
+import io.ktor.utils.io.writeInt
 
 /**
  * Length-prefixed framing so TCP stream boundaries always match message
@@ -12,19 +14,20 @@ import java.io.OutputStream
 object Framing {
     private const val MAX_FRAME_BYTES = 1 shl 20 // 1 MiB is far more than any OpenFind message needs
 
-    fun writeFrame(output: OutputStream, payload: ByteArray) {
-        val dataOutput = DataOutputStream(output)
-        dataOutput.writeInt(payload.size)
-        dataOutput.write(payload)
-        dataOutput.flush()
+    suspend fun writeFrame(
+        output: ByteWriteChannel,
+        payload: ByteArray,
+    ) {
+        output.writeInt(payload.size)
+        output.writeFully(payload)
+        output.flush()
     }
 
-    fun readFrame(input: InputStream): ByteArray {
-        val dataInput = DataInputStream(input)
-        val length = dataInput.readInt()
+    suspend fun readFrame(input: ByteReadChannel): ByteArray {
+        val length = input.readInt()
         require(length in 0..MAX_FRAME_BYTES) { "Refusing to read frame of size $length" }
         val buffer = ByteArray(length)
-        dataInput.readFully(buffer)
+        input.readFully(buffer)
         return buffer
     }
 }

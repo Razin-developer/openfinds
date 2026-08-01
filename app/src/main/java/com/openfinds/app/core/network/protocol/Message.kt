@@ -5,7 +5,6 @@ import kotlinx.serialization.Serializable
 /** Wire format for every frame exchanged over an OpenFind P2P TCP session. */
 @Serializable
 sealed interface P2pMessage {
-
     /** Sent by the connecting device to start (or resume) a session. */
     @Serializable
     data class HandshakeInit(

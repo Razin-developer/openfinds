@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -52,7 +51,10 @@ fun FindDeviceScreen(
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.primary) {
         Box(modifier = Modifier.fillMaxSize()) {
             IconButton(
-                onClick = { viewModel.stopFind(); onClose() },
+                onClick = {
+                    viewModel.stopFind()
+                    onClose()
+                },
                 modifier = Modifier.align(Alignment.TopStart).padding(16.dp),
             ) {
                 Icon(Icons.Filled.Close, contentDescription = "Stop finding", tint = MaterialTheme.colorScheme.onPrimary)
@@ -127,14 +129,16 @@ private fun PulseRing() {
     )
     Box(contentAlignment = Alignment.Center) {
         Box(
-            modifier = Modifier
-                .size((180 * scale).dp)
-                .background(Color.White.copy(alpha = 0.15f), CircleShape),
+            modifier =
+                Modifier
+                    .size((180 * scale).dp)
+                    .background(Color.White.copy(alpha = 0.15f), CircleShape),
         )
         Box(
-            modifier = Modifier
-                .size(120.dp)
-                .background(Color.White.copy(alpha = 0.25f), CircleShape),
+            modifier =
+                Modifier
+                    .size(120.dp)
+                    .background(Color.White.copy(alpha = 0.25f), CircleShape),
             contentAlignment = Alignment.Center,
         ) {
             Icon(Icons.Filled.MyLocation, contentDescription = null, tint = Color.White, modifier = Modifier.size(56.dp))

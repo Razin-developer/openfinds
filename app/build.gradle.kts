@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.paparazzi)
 }
 
 android {
@@ -129,6 +130,7 @@ dependencies {
     implementation(libs.androidx.camera.camera2)
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
+    implementation(libs.ktor.network)
 
     testImplementation(libs.junit)
     testImplementation(libs.mockk)
@@ -139,10 +141,15 @@ dependencies {
     testImplementation(libs.androidx.arch.core.testing)
 
     androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.androidx.test.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.hilt.android)
     kspAndroidTest(libs.hilt.compiler)
     androidTestImplementation(libs.mockk.android)
+}
+
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
 }
